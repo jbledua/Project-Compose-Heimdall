@@ -1,0 +1,28 @@
+http:
+  routers:
+    app1:
+      rule: "Host(`app1.example.com`)"
+      entryPoints:
+        - websecure
+      service: app1-svc
+      tls:
+        certResolver: letsencrypt
+
+    app2:
+      rule: "Host(`app2.example.com`)"
+      entryPoints:
+        - websecure
+      service: app2-svc
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    app1-svc:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:12345"
+
+    app2-svc:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:23456"
