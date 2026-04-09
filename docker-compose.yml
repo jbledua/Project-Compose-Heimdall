@@ -29,8 +29,6 @@ services:
     network_mode: service:heimdall-ts
     depends_on:
       - heimdall-ts
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       - TZ=${TIMEZONE:-UTC}
     volumes:
