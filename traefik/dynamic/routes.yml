@@ -1,0 +1,28 @@
+http:
+  routers:
+    books:
+      rule: "Host(`books.ledua.ca`)"
+      entryPoints:
+        - websecure
+      service: books-svc
+      tls:
+        certResolver: letsencrypt
+
+    plex:
+      rule: "Host(`plex.ledua.ca`)"
+      entryPoints:
+        - websecure
+      service: plex-svc
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    books-svc:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:13378"
+
+    plex-svc:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:32400"
