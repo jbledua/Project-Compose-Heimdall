@@ -4,6 +4,7 @@ services:
     image: tailscale/tailscale:latest
     container_name: ${STACK_NAME}-ts
     hostname: ${TS_HOSTNAME}
+    network_mode: bridge
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}
       - "TS_EXTRA_ARGS=--advertise-tags=tag:container --reset"
