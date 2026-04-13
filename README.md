@@ -52,6 +52,7 @@ Edit `.env` and update these values:
 - `TIMEZONE`
 - `TS_HOSTNAME`
 - `TS_AUTHKEY`
+- `TS_EXTRA_ARGS`
 - `ACME_EMAIL`
 - `CF_TUNNEL_TOKEN`
 - `BOOKS_HOST`
@@ -64,6 +65,8 @@ To create `TS_AUTHKEY`, open the Tailscale admin console and create an auth key:
 https://tailscale.com/kb/1085/auth-keys/
 
 If you are using tags, make sure the key is allowed to use the configured tag.
+
+By default, `TS_EXTRA_ARGS` does not include `--reset`, which helps avoid restart loops on hosts that reuse the same auth key across restarts.
 
 ### 3. Configure route values
 
