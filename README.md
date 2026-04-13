@@ -57,7 +57,6 @@ Edit `.env` and update these values:
 - `TRAEFIK_DASHBOARD_PORT`
 - `ACME_EMAIL`
 - `CF_TUNNEL_TOKEN`
-- `TRAEFIK_STATIC_CONFIG` (optional; default `./traefik/traefik.yml`)
 - `TRAEFIK_DYNAMIC_CONFIG_DIR` (optional; default `./traefik/dynamic`)
 
 To create `TS_AUTHKEY`, open the Tailscale admin console and create an auth key:
@@ -95,14 +94,13 @@ Run the stack from the directory containing `docker-compose.yml`:
 docker compose up -d
 ```
 
-If you deploy from Portainer or another remote stack UI and see `bind mount failed ... /traefik/dynamic does not exist`, set absolute host paths in `.env`:
+If you deploy from Portainer or another remote stack UI and see `bind mount failed ... /traefik/dynamic does not exist`, set an absolute host path in `.env`:
 
 ```env
-TRAEFIK_STATIC_CONFIG=/opt/heimdall/traefik/traefik.yml
 TRAEFIK_DYNAMIC_CONFIG_DIR=/opt/heimdall/traefik/dynamic
 ```
 
-Then make sure those paths exist on the Docker host and include `routes.yml` in the dynamic directory.
+Then make sure that path exists on the Docker host and includes `routes.yml`.
 
 To check container status:
 

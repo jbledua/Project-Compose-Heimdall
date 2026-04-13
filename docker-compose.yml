@@ -21,14 +21,25 @@ services:
     image: traefik:v3.3
     container_name: ${STACK_NAME}-app
     command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
       - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --log.level=INFO
+      - --accesslog=true
     network_mode: service:heimdall-ts
     depends_on:
       - heimdall-ts
     environment:
       - TZ=${TIMEZONE:-UTC}
     volumes:
-      - ${TRAEFIK_STATIC_CONFIG:-./traefik/traefik.yml}:/etc/traefik/traefik.yml:ro
       - ${TRAEFIK_DYNAMIC_CONFIG_DIR:-./traefik/dynamic}:/etc/traefik/dynamic:ro
       - heimdall-letsencrypt:/letsencrypt
     restart: unless-stopped
