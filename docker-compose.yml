@@ -37,12 +37,63 @@ services:
     network_mode: service:heimdall-ts
     depends_on:
       - heimdall-ts
+      - heimdall-routes-init
     environment:
       - TZ=${TIMEZONE:-UTC}
     volumes:
-      - ${TRAEFIK_DYNAMIC_CONFIG_DIR:-./traefik/dynamic}:/etc/traefik/dynamic:ro
+      - heimdall-traefik-dynamic:/etc/traefik/dynamic:ro
       - heimdall-letsencrypt:/letsencrypt
     restart: unless-stopped
+
+  heimdall-routes-init:
+    image: alpine:3.20
+    container_name: ${STACK_NAME}-routes-init
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        cat > /dynamic/routes.yml <<'EOF'
+        http:
+          routers:
+            books:
+              rule: "Host(`__BOOKS_HOST__`)"
+              entryPoints:
+                - websecure
+              service: books-svc
+              tls:
+                certResolver: letsencrypt
+
+            plex:
+              rule: "Host(`__PLEX_HOST__`)"
+              entryPoints:
+                - websecure
+              service: plex-svc
+              tls:
+                certResolver: letsencrypt
+
+          services:
+            books-svc:
+              loadBalancer:
+                servers:
+                  - url: "__BOOKS_URL__"
+
+            plex-svc:
+              loadBalancer:
+                servers:
+                  - url: "__PLEX_URL__"
+        EOF
+        sed -i "s|__BOOKS_HOST__|${BOOKS_HOST}|g" /dynamic/routes.yml
+        sed -i "s|__PLEX_HOST__|${PLEX_HOST}|g" /dynamic/routes.yml
+        sed -i "s|__BOOKS_URL__|${BOOKS_URL}|g" /dynamic/routes.yml
+        sed -i "s|__PLEX_URL__|${PLEX_URL}|g" /dynamic/routes.yml
+    environment:
+      - BOOKS_HOST=${BOOKS_HOST}
+      - PLEX_HOST=${PLEX_HOST}
+      - BOOKS_URL=${BOOKS_URL}
+      - PLEX_URL=${PLEX_URL}
+    volumes:
+      - heimdall-traefik-dynamic:/dynamic
+    restart: "no"
 
   heimdall-cf:
     image: cloudflare/cloudflared:latest
@@ -60,4 +111,8 @@ volumes:
 
   heimdall-letsencrypt:
     name: ${STACK_NAME}-letsencrypt
+    driver: local
+
+  heimdall-traefik-dynamic:
+    name: ${STACK_NAME}-traefik-dynamic
     driver: local

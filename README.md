@@ -52,12 +52,12 @@ Edit `.env` and update these values:
 - `TIMEZONE`
 - `TS_HOSTNAME`
 - `TS_AUTHKEY`
-- `HTTP_PORT`
-- `HTTPS_PORT`
-- `TRAEFIK_DASHBOARD_PORT`
 - `ACME_EMAIL`
 - `CF_TUNNEL_TOKEN`
-- `TRAEFIK_DYNAMIC_CONFIG_DIR` (optional; default `./traefik/dynamic`)
+- `BOOKS_HOST`
+- `PLEX_HOST`
+- `BOOKS_URL`
+- `PLEX_URL`
 
 To create `TS_AUTHKEY`, open the Tailscale admin console and create an auth key:
 
@@ -65,26 +65,14 @@ https://tailscale.com/kb/1085/auth-keys/
 
 If you are using tags, make sure the key is allowed to use the configured tag.
 
-### 3. Create your routes file
+### 3. Configure route values
 
-Copy the example dynamic routes file and replace the placeholder values.
+Set these environment values in `.env`:
 
-On Windows PowerShell:
+- `BOOKS_HOST` and `PLEX_HOST` for public hostnames
+- `BOOKS_URL` and `PLEX_URL` for backend endpoints
 
-```powershell
-Copy-Item .\traefik\dynamic\routes.example.yml .\traefik\dynamic\routes.yml
-```
-
-On macOS or Linux:
-
-```bash
-cp ./traefik/dynamic/routes.example.yml ./traefik/dynamic/routes.yml
-```
-
-Then edit `traefik/dynamic/routes.yml`:
-
-- Replace `app1.example.com` and `app2.example.com` with your real hostnames
-- Update backend URLs (for example `http://host.docker.internal:12345`) to match your local services
+At startup, `heimdall-routes-init` generates Traefik dynamic routes into an internal Docker volume.
 
 ## Deploy the Stack
 
@@ -94,13 +82,7 @@ Run the stack from the directory containing `docker-compose.yml`:
 docker compose up -d
 ```
 
-If you deploy from Portainer or another remote stack UI and see `bind mount failed ... /traefik/dynamic does not exist`, set an absolute host path in `.env`:
-
-```env
-TRAEFIK_DYNAMIC_CONFIG_DIR=/opt/heimdall/traefik/dynamic
-```
-
-Then make sure that path exists on the Docker host and includes `routes.yml`.
+This stack does not require host bind mounts for Traefik dynamic configuration, so it works in Portainer stack deployments that only include a compose file.
 
 To check container status:
 
@@ -116,8 +98,8 @@ docker compose logs -f
 
 ## Access
 
-- Traefik dashboard: `http://localhost:8080` (or the value of `TRAEFIK_DASHBOARD_PORT`)
-- Routed apps: use the hostnames configured in `traefik/dynamic/routes.yml`
+- Traefik dashboard is available through your configured ingress path
+- Routed apps: use the hostnames configured in `BOOKS_HOST` and `PLEX_HOST`
 
 If your client is connected to the same Tailscale tailnet, you can also access services using the node's Tailscale DNS name or Tailscale IP address.
 
@@ -134,4 +116,4 @@ The stack uses two named volumes:
 
 - The Traefik container uses `network_mode: service:heimdall-ts`, so it shares the Tailscale container's network stack.
 - `ACME_EMAIL` from `.env` is passed to Traefik at startup using a Docker Compose command argument.
-- `traefik/dynamic/routes.yml` is gitignored so private hostnames and internal endpoints are not committed.
+- Dynamic Traefik routes are generated at startup from `.env` values by `heimdall-routes-init`.
