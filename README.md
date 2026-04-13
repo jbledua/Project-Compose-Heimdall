@@ -1,19 +1,24 @@
 # Project Compose Heimdall
 
-A simple Docker Compose stack for running Traefik behind a Tailscale sidecar.
+A simple Docker Compose stack for running Traefik behind a Tailscale sidecar with optional Cloudflare Tunnel ingress.
 
-The stack has two services:
+The stack has three services:
 
 - `heimdall-ts`: a Tailscale container that handles secure network access
 - `heimdall-app`: a Traefik container that shares the Tailscale network namespace
+- `heimdall-cf`: a Cloudflare Tunnel container that also shares the same network namespace and forwards traffic to Traefik
 
-This setup lets you publish self-hosted services with Traefik while keeping network access controlled through Tailscale.
+This setup supports two traffic paths to your local services:
+
+1. Public Domain -> Cloudflare -> Traefik -> Local Service
+2. Tailnet Device -> Tailscale Sidecar -> Traefik -> Local Service
 
 ## Requirements
 
 - Docker
 - Docker Compose
 - A Tailscale auth key with the required tags configured
+- A Cloudflare Tunnel token (for the public-domain path)
 - DNS records for any hostnames used in your Traefik routes
 
 ## Getting Started
@@ -51,6 +56,7 @@ Edit `.env` and update these values:
 - `HTTPS_PORT`
 - `TRAEFIK_DASHBOARD_PORT`
 - `ACME_EMAIL`
+- `CF_TUNNEL_TOKEN`
 
 To create `TS_AUTHKEY`, open the Tailscale admin console and create an auth key:
 
@@ -105,6 +111,8 @@ docker compose logs -f
 - Routed apps: use the hostnames configured in `traefik/dynamic/routes.yml`
 
 If your client is connected to the same Tailscale tailnet, you can also access services using the node's Tailscale DNS name or Tailscale IP address.
+
+For Cloudflare public access, create a named tunnel and set each public hostname's origin service to `https://localhost:443` (from the `heimdall-cf` container perspective), with origin certificate verification disabled if needed.
 
 ## Volumes and Data
 
