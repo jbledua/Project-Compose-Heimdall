@@ -1,7 +1,7 @@
 http:
   routers:
     books:
-      rule: "Host(`books.ledua.ca`)"
+      rule: "Host(`books.{$DOMAIN}`)"
       entryPoints:
         - websecure
       service: books-svc
@@ -9,7 +9,7 @@ http:
         certResolver: letsencrypt
 
     plex:
-      rule: "Host(`plex.ledua.ca`)"
+      rule: "Host(`plex.{$DOMAIN}`)"
       entryPoints:
         - websecure
       service: plex-svc

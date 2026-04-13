@@ -28,8 +28,8 @@ services:
     environment:
       - TZ=${TIMEZONE:-UTC}
     volumes:
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ${TRAEFIK_STATIC_CONFIG:-./traefik/traefik.yml}:/etc/traefik/traefik.yml:ro
+      - ${TRAEFIK_DYNAMIC_CONFIG_DIR:-./traefik/dynamic}:/etc/traefik/dynamic:ro
       - heimdall-letsencrypt:/letsencrypt
     restart: unless-stopped
 
